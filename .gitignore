@@ -1,0 +1,20 @@
+# --- Python e Django Lixo/Cache ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Ambiente Virtual ---
+venv/
+env/
+.venv/
+
+# --- Banco de Dados Local ---
+db.sqlite3
+db.sqlite3-journal
+
+# --- IDEs e Sistema Operacional ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
