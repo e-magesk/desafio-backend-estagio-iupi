@@ -12,7 +12,7 @@ class Transaction(models.Model):
     # Criação enum do tipo de transição
     class TransactionType(models.TextChoices):
         INCOME = 'income', 'Entrada'
-        EXPENSE = 'expense' 'Saída'
+        EXPENSE = 'expense', 'Saída'
 
     # ========================================
     # CAMPOS
@@ -21,19 +21,18 @@ class Transaction(models.Model):
     id = models.BigAutoField(primary_key=True)
 
     description = models.CharField(
-        max_length=255, 
+        max_length=255,
         verbose_name="Descrição"
     )
     
     amount = models.DecimalField(
-        max_digits=10, 
+        max_digits=10,
         decimal_places=2,
         verbose_name="Valor",
         validators=[MinValueValidator(Decimal('0.01'))]
     )
     
     type = models.CharField(
-        max_length=7,           
         choices=TransactionType.choices,
         verbose_name="Tipo"
     )
