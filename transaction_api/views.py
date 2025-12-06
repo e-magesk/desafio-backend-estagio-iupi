@@ -49,3 +49,17 @@ def transactions_manager(request):
         return Response(transaction_serializers.data, status=status.HTTP_200_OK)
     
     return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_transaction_by_id(request, id):
+
+    if request.method != 'GET':
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        transaction = Transaction.objects.get(pk=id)
+    except Transaction.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    transaction_serializer = TransactionSerializer(transaction)
+    return Response(transaction_serializer.data, status=status.HTTP_200_OK)
