@@ -26,10 +26,24 @@ def transactions_manager(request):
             return Response(transaction_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
-    # Obtendo todas as transações
+    # Obtendo as transações requisitadas
     if request.method == 'GET':
 
+        # Obtém todas as transações
         transactions = Transaction.objects.all()
+        
+        # Recolhe as informações de filtro (se houver)
+        transaction_description = request.query_params.get('description', None)
+        transaction_type = request.query_params.get('type', None)
+
+        # Filtra pela descrição, se fornecida
+        if transaction_description is not None:
+            transactions = transactions.filter(description__contains=transaction_description)
+
+        # Filtra pelo tipo, se fornecido
+        if transaction_type is not None:
+            transactions = transactions.filter(type=transaction_type.strip())
+
         transaction_serializers = TransactionSerializer(transactions, many=True)
 
         return Response(transaction_serializers.data, status=status.HTTP_200_OK)
