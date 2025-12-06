@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 
 from .models import Transaction
@@ -30,7 +30,8 @@ def transactions_manager(request):
     if request.method == 'GET':
 
         # Obtém todas as transações
-        transactions = Transaction.objects.all()
+        transactions = Transaction.objects.all().order_by('id')
+
         
         # Recolhe as informações de filtro (se houver)
         transaction_description = request.query_params.get('description', None)
@@ -44,9 +45,14 @@ def transactions_manager(request):
         if transaction_type is not None:
             transactions = transactions.filter(type=transaction_type.strip())
 
-        transaction_serializers = TransactionSerializer(transactions, many=True)
+        # Realizando a paginação
+        paginator = PageNumberPagination()
+        result_transactions = paginator.paginate_queryset(transactions, request)
 
-        return Response(transaction_serializers.data, status=status.HTTP_200_OK)
+        transaction_serializers = TransactionSerializer(result_transactions, many=True)
+
+        # Devolve a resposta paginada e já (por padrão) com o status 200 OK
+        return paginator.get_paginated_response(transaction_serializers.data)
     
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
