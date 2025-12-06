@@ -84,3 +84,23 @@ def transaction_specific_manager(request, id):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def transactions_summary(request):
+
+    if request.method != 'GET':
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    
+    transactions = Transaction.objects.all()
+
+    total_income = transactions.filter(type=Transaction.TransactionType.INCOME).sum(t.amount for t in transactions)
+    total_expense = transactions.filter(type=Transaction.TransactionType.EXPENSE).sum(t.amount for t in transactions)
+    net_balance = total_income - total_expense
+
+    summary = {
+        "total_income": total_income,
+        "total_expense": total_expense,
+        "net_balance": net_balance
+    }
+
+    return Response(summary, status=status.HTTP_200_OK)
