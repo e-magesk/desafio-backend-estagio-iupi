@@ -50,16 +50,38 @@ def transactions_manager(request):
     
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def get_transaction_by_id(request, id):
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+def transaction_specific_manager(request, id):
 
-    if request.method != 'GET':
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+    # Obtendo uma transação específica
+    if request.method == 'GET':
+        try:
+            transaction = Transaction.objects.get(pk=id)
+        except Transaction.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        transaction_serializer = TransactionSerializer(transaction)
+        return Response(transaction_serializer.data, status=status.HTTP_200_OK)
     
-    try:
-        transaction = Transaction.objects.get(pk=id)
-    except Transaction.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    # Atualizando uma transação específica
+    if request.method == 'PUT' or request.method == 'PATCH':
+        try:
+            transaction = Transaction.objects.get(pk=id)
+        except Transaction.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-    transaction_serializer = TransactionSerializer(transaction)
-    return Response(transaction_serializer.data, status=status.HTTP_200_OK)
+        updated_data = request.data
+
+        if request.method == 'PUT':         # Atualização completa
+            transaction_serializer = TransactionSerializer(transaction, data=updated_data)
+        elif request.method == 'PATCH':     # Atualiação parcial
+            transaction_serializer = TransactionSerializer(transaction, data=updated_data, partial=True)
+
+        if transaction_serializer.is_valid():
+            transaction_serializer.save()
+            return Response(transaction_serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(transaction_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+    return Response(status=status.HTTP_400_BAD_REQUEST)

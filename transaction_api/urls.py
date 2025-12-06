@@ -4,5 +4,5 @@ from . import views
 
 urlpatterns = [
     path('', views.transactions_manager),
-    path('<int:id>/', views.get_transaction_by_id)
+    path('<int:id>/', views.transaction_specific_manager)
 ]
