@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 
+from django.db.models import Sum
 from .models import Transaction
 from .serializers import TransactionSerializer
 
@@ -99,8 +100,8 @@ def transactions_summary(request):
     
     transactions = Transaction.objects.all()
 
-    total_income = transactions.filter(type=Transaction.TransactionType.INCOME).sum(t.amount for t in transactions)
-    total_expense = transactions.filter(type=Transaction.TransactionType.EXPENSE).sum(t.amount for t in transactions)
+    total_income = transactions.filter(type=Transaction.TransactionType.INCOME).aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expense = transactions.filter(type=Transaction.TransactionType.EXPENSE).aggregate(Sum('amount'))['amount__sum'] or 0
     net_balance = total_income - total_expense
 
     summary = {
