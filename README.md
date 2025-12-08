@@ -1,15 +1,5 @@
 # 📖 Desafio de Estágio Backend (API REST) - IUPI
 
-Olá, candidato\! Que bom ter você aqui. Este desafio foi criado para avaliarmos seus conhecimentos fundamentais na construção de APIs REST, modelagem de dados e boas práticas de desenvolvimento backend.
-
-## Stack Tecnológica
-
-  * **Nossa Stack (Preferencial):** Na IUPI, nossa stack principal de backend é **Python** com **Django** e **Django REST Framework (DRF)**. Gostaríamos muito de ver seu desafio construído com essas ferramentas.
-  * **Outras Stacks:** Se você ainda não domina Django, mas é fera em outra stack (Node.js, Flask/FastAPI, Spring Boot, etc.), sinta-se à vontade para usá-la. Valorizamos bons fundamentos de programação acima de tudo.
-  * **Banco de Dados:** Recomendamos o uso de **SQLite**. É um banco de dados leve, baseado em arquivo, que não exige um servidor separado e foca na lógica da API.
-
------
-
 ## 🎯 O Desafio
 
 Sua missão é construir a API REST para o nosso "Controle de Despesas". Esta API será a fonte da verdade para as transações financeiras e deve permitir que um frontend crie, liste, edite e delete essas transações.
@@ -100,26 +90,6 @@ Sua API deve expor os seguintes endpoints (o CRUD completo).
     ```
 
 -----
-## 💎 Requisitos de Qualidade de Código
-
-* **1. Padrões de Nomenclatura:**
-    * **Se usar nossa stack (Python/Django):**
-        * Use `snake_case` para variáveis, funções, métodos e nomes de arquivos.
-        * Use `PascalCase` para classes.
-    * **Se usar outra stack:** Siga as convenções de nomenclatura dessa linguagem. O importante é a consistência.
-        * **Exemplo (JavaScript/Node.js):** Use `camelCase` para variáveis e funções, `PascalCase` para classes e `kebab-case` para nomes de arquivos.
-        * **Exemplo (Java/Spring):** Use `camelCase` para variáveis e métodos, e `PascalCase` para classes e interfaces.
-
-* **2. Documentação de Código (Comentários):**
-    * Use `docstrings` (para Python) ou o formato de documentação padrão da sua linguagem (JSDoc, JavaDoc, etc.) para documentar suas classes e funções/métodos principais.
-
-* **3. Estrutura de Projeto:**
-    * Você deve organizar seu código de forma lógica e escalável. A forma como você estrutura seus arquivos e módulos (separação de responsabilidades) será avaliada.
-
-* **4. `.gitignore`:**
-    * Configure seu `.gitignore` corretamente para ignorar arquivos desnecessários (ex: `__pycache__`, `node_modules/`, `.env`, `db.sqlite3`, `venv/`).
-
------
 
 ## ⭐ Requisitos Bônus (Opcional)
 
@@ -132,43 +102,130 @@ Sua API deve expor os seguintes endpoints (o CRUD completo).
 
 -----
 
+# 💰 Implementação API de Transações
+
+## Tecnologias Utilizadas
+
+* **Linguagem:** Python 3.12.9
+* **Framework Web:** Django
+* **API Toolkit:** Django REST Framework (DRF)
+* **Autenticação:** JWT (SimpleJWT)
+* **Banco de Dados:** SQLite
+
+## ⚙️ Instalação e Configuração
+
+Siga o passo a passo abaixo para rodar o projeto na sua máquina local.
+
+### 1. Pré-requisitos
+Certifique-se de ter o **Python** instalado na sua máquina.
+
+### 2. Clonar o repositório e acessar a pasta
+```bash
+git clone <URL_DESTE_REPOSITORIO>
+cd nome-da-pasta-do-projeto
+```
+
+### 3. Criar/Ativar o ambiente virtual
+Abra o terminal na pasta raiz do projeto e execute:
+
+Caso o ambiente virtual ainda não exista, `para criá-lo` execute:
+
+```bash
+python -m venv venv
+```
+
+`Para ativar` o ambiente virtual, execute:
+
+**No Windows (Prompt)**
+
+```bash
+venv\Scripts\activate
+```
+
+**No Windows (PowerShell)**
+
+```bash
+.\venv\Scripts\Activate.ps1
+```
+
+**No Linux ou macOS**
+
+```bash
+source venv/bin/activate
+```
+
+### 4. Instalar dependências necessárias
+
+Com o ambiente virtual ativado, instale as bibliotecas necessárias:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 5. Preparando o banco de dados
+
+O projeto utiliza SQLite. Você precisa criar as tabelas antes de rodar.
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+(Opcional) Se quiser criar um superusuário para acessar o admin, bastar roda o comando abaixo e seguir as instruções no terminal.
+
+```bash
+python manage.py createsuperuser
+```
+-----
+
+## 🚀 Como Rodar o Projeto
+
+Para iniciar o servidor de desenvolvimento:
+
+```bash
+python manage.py runserver
+```
+
+A API estará disponível em: `http://127.0.0.1:8000/`.
+
+-----
+
+## 🔑 Autenticação e Endpoints
+
+Esta API utiliza **JSON Web Tokens (JWT)** para segurança.
+Com exceção da rota de login, **todas** as outras rotas são protegidas e exigem autenticação.
+
+### Como Autenticar
+
+Para acessar os endpoints protegidos, você deve enviar o `token de acesso` no **Header** da requisição HTTP seguindo este padrão exato:
+
+* **Key:** `Authorization`
+* **Value:** `Bearer <seu_token_access_aqui>`
+
+---
+
+### 📡 Tabela de Endpoints
+
+Abaixo estão as rotas disponíveis na API.
+
+| Método | Endpoint | Acesso | Descrição |
+| :--- | :--- | :--- | :--- |
+| **POST** | `/api/login/` | 🔓 Público | Recebe `username` e `password` e retorna os tokens (`access` e `refresh`). |
+| **POST** | `/api/transactions/` | 🔒 Protegido | Cria uma nova transação. Campos obrigatórios: `amount`, `type`, `date`. |
+| **GET** | `/api/transactions/` | 🔒 Protegido | Lista todas as transações do usuário. Aceita paginação (`?page=1`). |
+| **GET** | `/api/transactions/{id}/` | 🔒 Protegido | Exibe os detalhes de uma transação específica. |
+| **PUT** | `/api/transactions/{id}/` | 🔒 Protegido | Atualiza uma transação completa. |
+| **PATCH**| `/api/transactions/{id}/` | 🔒 Protegido | Atualiza parcialmente uma transação (ex: mudar só o valor). |
+| **DELETE**| `/api/transactions/{id}/` | 🔒 Protegido | Remove uma transação permanentemente. |
+| **GET** | `/api/summary/` | 🔒 Protegido | Retorna o resumo financeiro (Total Receitas, Despesas e Saldo). |
+
+#### 🔍 Filtros Disponíveis
+Na rota de listagem (`GET /api/transactions/`), você pode usar os seguintes filtros na URL:
+
+* **Por Tipo:** `?type=income` ou `?type=expense`
+* **Por Descrição (Busca):** `?description=aluguel`
+
 ## 🚀 Como Testar sua API
 
-Para testar os endpoints de uma API (enviar `POST`, `PUT`, etc.), você não usa o navegador. Recomendamos o uso de uma ferramenta como o **Postman** ou **Insomnia**. Elas facilitam o envio de requisições e a visualização das respostas.
+Para testar os endpoints de uma API (enviar `POST`, `PUT`, etc.), você não usa o navegador. Recomendamos o uso de uma ferramenta como o **Postman** ou **Insomnia**. Elas facilitam o envio de requisições e a visualização das resp
 
-## 📚 Materiais de Aprendizado (Pode consultar\!)
-  * **Aprenda com vídeos**
-    * [Como criar uma API em Django - Criando um CRUD - Aula Completa](https://youtu.be/Q2tEqNfgIXM?si=KBBw_cqHJ75b181a)
-
-  * **Django (Fundamentos):**
-      * [Guia de Instalação Rápida](https://docs.djangoproject.com/pt-br/5.2/intro/install/)
-      * [Tutorial Oficial do Django](https://docs.djangoproject.com/pt-br/5.2/intro/tutorial01/)
-      * [Documentação Oficial do Django](https://docs.djangoproject.com/pt-br/5.2/)
-  * **Django REST Framework (Documentação):**
-      * [Página Inicial da Documentação do DRF](https://www.django-rest-framework.org/)
-      * [DRF - Serializers (Serialização)](https://www.django-rest-framework.org/tutorial/1-serialization/)
-      * [DRF - ViewSets & Routers (Views)](https://www.django-rest-framework.org/api-guide/viewsets/)
-      * [DRF - Filtering (Filtros)](https://www.django-rest-framework.org/api-guide/filtering/)
-  * **Geral (Conceitos):**
-      * [O que é uma API REST? (Guia da AWS)](https://aws.amazon.com/pt/what-is/restful-api/)
-      * [HTTP Status Codes (MDN)](https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status)
-  * **Ferramentas de Teste de API:**
-      * [O que é o Postman? (Guia para Iniciantes)](https://learning.postman.com/docs/getting-started/introduction/)
-  * **Autenticação:**
-      * [DRF Simple JWT (Biblioteca popular)](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/)
-      * [DRF - Autenticação (Documentação)](https://www.django-rest-framework.org/api-guide/authentication/)
-
-## 🚚 Como Entregar
-
-1.  Faça um Fork deste repositório.
-2.  Crie uma nova branch (ex: `meu-nome-desafio`).
-3.  Faça seus commits.
-4.  **IMPORTANTE:** Adicione ou atualize o `README.md` do seu projeto explicando:
-      * A stack que você usou.
-      * Como instalar as dependências.
-      * Como preparar o banco de dados (rodar migrações, etc.).
-      * Como rodar o projeto.
-5.  Ao finalizar, abra um **Pull Request (PR)** do seu fork de volta para este repositório original.
-6.  No corpo do PR, deixe comentários sobre suas decisões, dificuldades e o que você mais gostou.
-
-Boa sorte\!
