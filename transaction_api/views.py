@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
@@ -12,6 +13,7 @@ from .serializers import TransactionSerializer
 import json
 
 @api_view(['POST', 'GET'])
+@permission_classes([IsAuthenticated])
 def transactions_manager(request):
 
     # Criação da transição
@@ -21,7 +23,7 @@ def transactions_manager(request):
         transaction_serializer = TransactionSerializer(data=new_transaction)
 
         if transaction_serializer.is_valid():
-            transaction_serializer.save()
+            transaction_serializer.save(user=request.user)
             return Response(transaction_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(transaction_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -31,7 +33,7 @@ def transactions_manager(request):
     if request.method == 'GET':
 
         # Obtém todas as transações
-        transactions = Transaction.objects.all().order_by('id')
+        transactions = Transaction.objects.filter(user=request.user).order_by('id')
 
         
         # Recolhe as informações de filtro (se houver)
@@ -57,11 +59,13 @@ def transactions_manager(request):
     
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def transaction_specific_manager(request, id):
 
     try:
-        transaction = Transaction.objects.get(pk=id)
+        transaction = Transaction.objects.get(pk=id, user=request.user)
     except Transaction.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
@@ -93,12 +97,13 @@ def transaction_specific_manager(request, id):
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def transactions_summary(request):
 
     if request.method != 'GET':
         return Response(status=status.HTTP_400_BAD_REQUEST)
     
-    transactions = Transaction.objects.all()
+    transactions = Transaction.objects.filter(user=request.user)
 
     total_income = transactions.filter(type=Transaction.TransactionType.INCOME).aggregate(Sum('amount'))['amount__sum'] or 0
     total_expense = transactions.filter(type=Transaction.TransactionType.EXPENSE).aggregate(Sum('amount'))['amount__sum'] or 0

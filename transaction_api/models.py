@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from decimal import Decimal
+from django.contrib.auth.models import User # Importe o modelo de Usuário padrão
 
 # Create your models here.
 class Transaction(models.Model):
@@ -40,6 +41,12 @@ class Transaction(models.Model):
     date = models.DateField(
         verbose_name="Data"
     )
+
+    # ========================================
+    # CHAVES ESTRANGEIRAS
+    # ========================================
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transactions')
 
     def __str__(self):
         return f"{self.description} ({self.get_type_display()} - {self.amount})"
