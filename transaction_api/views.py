@@ -15,6 +15,20 @@ import json
 @api_view(['POST', 'GET'])
 @permission_classes([IsAuthenticated])
 def transactions_manager(request):
+    """
+    Gerencia a criação e listagem das transações.
+
+    Métodos suportados:
+    - **POST**: Cria uma nova transação.
+        - *Campos obrigatórios*: `amount`, `type`, `date`.
+        - O usuário é atribuído automaticamente com base no token de autenticação.
+
+    - **GET**: Retorna a lista de transações do usuário logado.
+        - *Filtros opcionais na URL:*
+            - `?type=income` ou `?type=expense` (Filtra por tipo)
+            - `?description=texto` (Busca parcial na descrição)
+            - `?page=N` (Paginação)
+    """
 
     # Criação da transição
     if request.method == 'POST':
@@ -63,6 +77,19 @@ def transactions_manager(request):
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def transaction_specific_manager(request, id):
+    """
+    Gerencia uma transação específica identificada pelo ID 
+    (apenas o usuário que criou a transação pode fazer isso).
+
+    Regras de Segurança:
+    - Retorna 404 se a transação não existir ou pertencer a outro usuário.
+
+    Métodos suportados:
+    - **GET**: Visualiza os detalhes da transação.
+    - **PUT**: Atualiza a transação inteira (todos os campos são validados).
+    - **PATCH**: Atualiza parcialmente.
+    - **DELETE**: Remove a transação permanentemente.
+    """
 
     try:
         transaction = Transaction.objects.get(pk=id, user=request.user)
@@ -99,6 +126,16 @@ def transaction_specific_manager(request, id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def transactions_summary(request):
+    """
+    Calcula o resumo financeiro total do usuário.
+
+    Realiza a soma agregada diretamente no banco de dados para performance.
+
+    Retorna um JSON com:
+    - `total_income`: Soma de todas as entradas.
+    - `total_expense`: Soma de todas as saídas.
+    - `balance`: Saldo final (Entradas - Saídas).
+    """
 
     if request.method != 'GET':
         return Response(status=status.HTTP_400_BAD_REQUEST)
