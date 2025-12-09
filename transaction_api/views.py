@@ -28,6 +28,7 @@ def transactions_manager(request):
             - `?type=income` ou `?type=expense` (Filtra por tipo)
             - `?description=texto` (Busca parcial na descrição)
             - `?page=N` (Paginação)
+            - `?order_by=field` ('date', '-date', 'amount', '-amount')
     """
 
     # Criação da transição
@@ -61,6 +62,12 @@ def transactions_manager(request):
         # Filtra pelo tipo, se fornecido
         if transaction_type is not None:
             transactions = transactions.filter(type=transaction_type.strip())
+
+        # Ordena os resultados, se solicitado
+        allowed_order_fields = ['date', '-date', 'amount', '-amount']
+        order_by = request.query_params.get('order_by', None)
+        if order_by in allowed_order_fields:
+            transactions = transactions.order_by(order_by)
 
         # Realizando a paginação
         paginator = PageNumberPagination()
@@ -141,6 +148,19 @@ def transactions_summary(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
     
     transactions = Transaction.objects.filter(user=request.user)
+
+    # Recolhe as informações de filtro (se houver)
+    transaction_description = request.query_params.get('description', None)
+
+    # Filtra pela descrição, se fornecida
+    if transaction_description is not None:
+        transactions = transactions.filter(description__contains=transaction_description)
+
+    # Ordena os resultados, se solicitado
+    allowed_order_fields = ['date', '-date', 'amount', '-amount']
+    order_by = request.query_params.get('order_by', None)
+    if order_by in allowed_order_fields:
+        transactions = transactions.order_by(order_by)
 
     total_income = transactions.filter(type=Transaction.TransactionType.INCOME).aggregate(Sum('amount'))['amount__sum'] or 0
     total_expense = transactions.filter(type=Transaction.TransactionType.EXPENSE).aggregate(Sum('amount'))['amount__sum'] or 0
